@@ -1,8 +1,8 @@
 ﻿/.idea/
-/TaskManager.Api/logs/
-/TaskManager.Api/obj/
-/TaskManager.Core/obj/
-/TaskManager.Infrastructure/obj/
-/TaskManager.Api/bin/
-/TaskManager.Core/bin/
-/TaskManager.Infrastructure/bin/
+/src/TaskManager.Api/logs/
+/src/TaskManager.Api/obj/
+/src/TaskManager.Core/obj/
+/src/TaskManager.Infrastructure/obj/
+/src/TaskManager.Api/bin/
+/src/TaskManager.Core/bin/
+/src/TaskManager.Infrastructure/bin/
