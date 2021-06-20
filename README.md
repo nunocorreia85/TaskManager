@@ -32,7 +32,7 @@ The task manager offers the possibility to list() all the running processes, sor
 
 ## How To Run
 
-* Colne this repository to a folder (eg. TaskManager)
+* Clone this repository to a folder (eg. TaskManager)
 * In the command line enter the folder
 * Run the command "dotnet run -p TaskManager.Api"
 * Open address https://localhost:5001/swagger/index.html
