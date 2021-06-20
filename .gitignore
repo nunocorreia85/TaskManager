@@ -1,0 +1,8 @@
+﻿/.idea/
+/TaskManager.Api/logs/
+/TaskManager.Api/obj/
+/TaskManager.Core/obj/
+/TaskManager.Infrastructure/obj/
+/TaskManager.Api/bin/
+/TaskManager.Core/bin/
+/TaskManager.Infrastructure/bin/
