@@ -2,6 +2,6 @@
 {
     public interface ISettings
     {
-        public int ProcessesMaximumCapacity { get => 100; } 
+        public int ProcessesMaximumCapacity => 100;
     }
 }

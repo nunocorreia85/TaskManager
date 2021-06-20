@@ -1,19 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using TaskManager.Core;
 using TaskManager.Core.Interfaces;
 using TaskManager.Infrastructure;
-using OperatingSystem = TaskManager.Core.OperatingSystem;
 
 namespace TaskManager.Api
 {
@@ -33,7 +27,7 @@ namespace TaskManager.Api
 
             services.AddSingleton<ISettings, Settings>();
             services.AddSingleton<IOperatingSystem, OperatingSystem>();
-            
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "TaskManager.Api", Version = "v1"});
@@ -49,6 +43,8 @@ namespace TaskManager.Api
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskManager.Api v1"));
             }
+
+            app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
 
