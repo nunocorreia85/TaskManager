@@ -10,9 +10,9 @@ namespace TaskManager.Core
     public class OperatingSystem : IOperatingSystem
     {
         private readonly ISettings _settings;
-        private readonly ILogger<OperatingSystem> _logger;
+        private readonly ILogger<IOperatingSystem> _logger;
 
-        public OperatingSystem(ISettings settings, ILogger<OperatingSystem> logger)
+        public OperatingSystem(ISettings settings, ILogger<IOperatingSystem> logger)
         {
             _settings = settings;
             _logger = logger;
@@ -21,7 +21,7 @@ namespace TaskManager.Core
 
         private ConcurrentDictionary<long, Process> Processes { get; }
 
-        public bool Add(Process process, AddMethod method)
+        public bool Add(AddMethod method, Process process)
         {
             _logger.LogInformation($"Add new process with id {process.Id}");
             return method switch
@@ -50,24 +50,23 @@ namespace TaskManager.Core
             Processes.Clear();
         }
 
-        public ICollection<Process> List(SortBy sortBy)
+        public ICollection<Process> List(SortBy sortBy, bool isDescending = false)
         {
-            if (sortBy == SortBy.Id) return Processes.Values;
-
-            var sortedList = new SortedList<long, Process>();
-
-            foreach (var (_, process) in Processes)
-                switch (sortBy)
-                {
-                    case SortBy.Priority:
-                        sortedList.Add((int) process.Priority, process);
-                        break;
-                    case SortBy.CreationTime:
-                        sortedList.Add((int) process.Created.Ticks, process);
-                        break;
-                }
-
-            return sortedList.Values;
+            switch (sortBy)
+            {
+                case SortBy.Priority:
+                    return isDescending ?  
+                        Processes.Values.OrderByDescending(p => p.Priority).ToList() : 
+                        Processes.Values.OrderBy(p => p.Priority).ToList();
+                case SortBy.CreationTime:
+                    return isDescending ? 
+                        Processes.Values.OrderByDescending(p => p.Created.Ticks).ToList() : 
+                        Processes.Values.OrderBy(p => p.Created.Ticks).ToList();
+                default:
+                    return isDescending ? 
+                        Processes.Values.OrderByDescending(p => p.Id).ToList() : 
+                        Processes.Values.OrderBy(p => p.Id).ToList();
+            }
         }
 
         private bool AddProcessPriorityMethod(Process newProcess)
@@ -76,18 +75,17 @@ namespace TaskManager.Core
             {
                 _logger.LogInformation("Max capacity reached");
 
-                var sortedList = new SortedList<long, Process>();
-                foreach (var process in Processes)
-                    if (newProcess.Priority < process.Value.Priority)
-                        sortedList.Add(process.Value.Created.Ticks * (int) process.Value.Priority, process.Value);
-                var last = sortedList.LastOrDefault();
-                if (last.Value == null)
+                var last =  Processes.Values
+                    .Where(p => newProcess.Priority > p.Priority)
+                    .OrderBy(p => p.Priority)
+                    .ThenBy(p => p.Created.Ticks).LastOrDefault();
+                if (last == null)
                 {
                     _logger.LogInformation("Could not find a process with lowest priority that is the oldest");
                     return false;
                 }
 
-                if (!Processes.TryRemove(last.Key, out _))
+                if (!Processes.TryRemove(last.Id, out _))
                 {
                     _logger.LogError("Failed to remove a process");
                     return false;
@@ -109,7 +107,7 @@ namespace TaskManager.Core
             {
                 _logger.LogInformation("Max capacity reached");
 
-                var lastProcess = Processes.OrderByDescending(pair => pair.Value.Created.Ticks).FirstOrDefault();
+                var lastProcess = Processes.OrderBy(pair => pair.Value.Created.Ticks).FirstOrDefault();
 
                 if (!Processes.TryRemove(lastProcess.Value.Id, out _))
                 {

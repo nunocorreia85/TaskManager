@@ -41,7 +41,7 @@ namespace TaskManager.Api.Controllers
             _logger.LogDebug("Method Add");
             if (!Enum.TryParse<AddMethod>(addMethod, true, out var addMethodEnum)) addMethodEnum = AddMethod.Default;
 
-            if (!_operatingSystem.Add(new Process(id, priority), addMethodEnum)) return NoContent();
+            if (!_operatingSystem.Add(addMethodEnum, new Process(id, priority))) return NoContent();
 
             return Ok();
         }
