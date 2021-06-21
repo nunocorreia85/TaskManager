@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using TaskManager.Api.Infrastructure;
 using TaskManager.Core;
 using TaskManager.Core.Interfaces;
-using TaskManager.Infrastructure;
 
 namespace TaskManager.Api
 {

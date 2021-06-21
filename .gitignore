@@ -2,10 +2,8 @@
 /src/TaskManager.Api/logs/
 /src/TaskManager.Api/obj/
 /src/TaskManager.Core/obj/
-/src/TaskManager.Infrastructure/obj/
 /src/TaskManager.Api/bin/
 /src/TaskManager.Core/bin/
-/src/TaskManager.Infrastructure/bin/
 
 tests/TaskManager.Core.UnitTests/bin/
 tests/TaskManager.Core.UnitTests/obj/

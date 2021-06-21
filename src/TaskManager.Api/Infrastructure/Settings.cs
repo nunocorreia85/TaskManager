@@ -1,6 +1,6 @@
 ﻿using TaskManager.Core.Interfaces;
 
-namespace TaskManager.Infrastructure
+namespace TaskManager.Api.Infrastructure
 {
     public class Settings : ISettings
     {
