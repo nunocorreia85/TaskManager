@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -8,52 +9,51 @@ using TaskManager.Core.Interfaces;
 
 namespace TaskManager.Api.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
+    [ApiController, Route("[controller]")]
     public class ProcessesController : ControllerBase
     {
         private readonly ILogger<ProcessesController> _logger;
-        private readonly IOperatingSystem _operatingSystem;
-        private readonly IDiagnosticContext _diagnosticContext;
 
-        public ProcessesController(ILogger<ProcessesController> logger,
-            IDiagnosticContext diagnosticContext,
-            IOperatingSystem operatingSystem)
+        private readonly IOperatingSystem _operatingSystem;
+
+        public ProcessesController(ILogger<ProcessesController> logger, IOperatingSystem operatingSystem)
         {
-            _logger = logger ??
-                      throw new ArgumentNullException(nameof(logger));
-            _operatingSystem = operatingSystem ??
-                               throw new ArgumentNullException(nameof(operatingSystem));
-            _diagnosticContext = diagnosticContext ??
-                                 throw new ArgumentNullException(nameof(diagnosticContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            _operatingSystem = operatingSystem ?? throw new ArgumentNullException(nameof(operatingSystem));
         }
 
-        [HttpDelete]
-        public IActionResult Delete()
+        [HttpGet]
+        public IActionResult Get(string sortBy)
         {
-            _logger.LogDebug("Method Delete");
-            return Ok();
+            _logger.LogDebug("Method Get");
+
+            if (!Enum.TryParse<SortBy>(sortBy, true, out var sortByEnum)) 
+                sortByEnum = SortBy.Id;
+
+            return new OkObjectResult(_operatingSystem.List(sortByEnum));
         }
 
         [HttpPost]
         public IActionResult Add(string addMethod, Process process)
         {
             _logger.LogDebug("Method Add");
-            if (!Enum.TryParse<AddMethod>(addMethod, true, out var addMethodEnum)) addMethodEnum = AddMethod.Default;
 
-            if (!_operatingSystem.Add(addMethodEnum, new Process(process.Id, process.Priority))) return NoContent();
+            if (!Enum.TryParse<AddMethod>(addMethod, true, out var parsedAddMethod)) 
+                parsedAddMethod = AddMethod.Default;
+
+            if (!_operatingSystem.Add(parsedAddMethod, new Process(process.Id, process.Priority))) 
+                return NoContent();
 
             return Ok();
         }
 
-        [HttpGet]
-        public IActionResult Get(string sortBy)
+        [HttpDelete]
+        public IActionResult Delete()
         {
-            _diagnosticContext.Set("CatalogLoadTime", 1423);
-            _logger.LogDebug("Method Get");
-            if (!Enum.TryParse<SortBy>(sortBy, true, out var sortByEnum)) sortByEnum = SortBy.Id;
+            _logger.LogDebug("Method Delete");
 
-            return new OkObjectResult(_operatingSystem.List(sortByEnum));
+            return Ok();
         }
     }
 }
