@@ -36,12 +36,12 @@ namespace TaskManager.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add(string addMethod, long id, Priority priority)
+        public IActionResult Add(string addMethod, Process process)
         {
             _logger.LogDebug("Method Add");
             if (!Enum.TryParse<AddMethod>(addMethod, true, out var addMethodEnum)) addMethodEnum = AddMethod.Default;
 
-            if (!_operatingSystem.Add(addMethodEnum, new Process(id, priority))) return NoContent();
+            if (!_operatingSystem.Add(addMethodEnum, new Process(process.Id, process.Priority))) return NoContent();
 
             return Ok();
         }

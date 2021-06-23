@@ -11,7 +11,9 @@ namespace TaskManager.Core
     {
         private readonly ISettings _settings;
         private readonly ILogger<IOperatingSystem> _logger;
-
+        
+        public static object syncLock = new object();
+        
         public OperatingSystem(ISettings settings, ILogger<IOperatingSystem> logger)
         {
             _settings = settings;
@@ -19,17 +21,23 @@ namespace TaskManager.Core
             Processes = new ConcurrentDictionary<long, Process>();
         }
 
+        /// <summary>
+        /// Use a dictionary to guarantee that the ID is unique 
+        /// </summary>
         private ConcurrentDictionary<long, Process> Processes { get; }
 
         public bool Add(AddMethod method, Process process)
         {
-            _logger.LogInformation($"Add new process with id {process.Id}");
-            return method switch
+            _logger.LogInformation("Add new process {@process}", process);
+            lock (syncLock)
             {
-                AddMethod.Fifo => AddProcessFifoMethod(process),
-                AddMethod.Priority => AddProcessPriorityMethod(process),
-                _ => AddProcessDefaultMethod(process)
-            };
+                return method switch
+                {
+                    AddMethod.Fifo => AddProcessFifoMethod(process),
+                    AddMethod.Priority => AddProcessPriorityMethod(process),
+                    _ => AddProcessDefaultMethod(process)
+                };
+            }
         }
 
         public void Kill(long processId)
@@ -60,8 +68,8 @@ namespace TaskManager.Core
                         Processes.Values.OrderBy(p => p.Priority).ToList();
                 case SortBy.CreationTime:
                     return isDescending ? 
-                        Processes.Values.OrderByDescending(p => p.Created.Ticks).ToList() : 
-                        Processes.Values.OrderBy(p => p.Created.Ticks).ToList();
+                        Processes.Values.OrderByDescending(p => p.Ticks).ToList() : 
+                        Processes.Values.OrderBy(p => p.Ticks).ToList();
                 default:
                     return isDescending ? 
                         Processes.Values.OrderByDescending(p => p.Id).ToList() : 
@@ -78,7 +86,7 @@ namespace TaskManager.Core
                 var last =  Processes.Values
                     .Where(p => newProcess.Priority > p.Priority)
                     .OrderBy(p => p.Priority)
-                    .ThenBy(p => p.Created.Ticks).LastOrDefault();
+                    .ThenBy(p => p.Ticks).LastOrDefault();
                 if (last == null)
                 {
                     _logger.LogInformation("Could not find a process with lowest priority that is the oldest");
@@ -107,7 +115,7 @@ namespace TaskManager.Core
             {
                 _logger.LogInformation("Max capacity reached");
 
-                var lastProcess = Processes.OrderBy(pair => pair.Value.Created.Ticks).FirstOrDefault();
+                var lastProcess = Processes.OrderBy(pair => pair.Value.Ticks).FirstOrDefault();
 
                 if (!Processes.TryRemove(lastProcess.Value.Id, out _))
                 {
@@ -129,8 +137,7 @@ namespace TaskManager.Core
                 return false;
             }
 
-            Processes.TryAdd(newProcess.Id, newProcess);
-            return true;
+            return Processes.TryAdd(newProcess.Id, newProcess);
         }
     }
 }

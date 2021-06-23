@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -120,6 +122,43 @@ namespace TaskManager.Core.UnitTests
             {
                 Assert.IsTrue(result);
                 Assert.IsFalse(list.Any(p => p.Id == 0));
+            });
+        }
+        
+        [Test]
+        public void Add_TestPerformance()
+        {
+            //Arrange
+            var settings = new Mock<ISettings>();
+            settings.SetupGet(s => s.ProcessesMaximumCapacity).Returns(100);
+            
+            _operatingSystem = new OperatingSystem(
+                settings.Object,
+                new Mock<ILogger<IOperatingSystem>>().Object);
+            
+            var addMethods = Enum.GetValues<AddMethod>();
+            var priorities = Enum.GetValues<Priority>();
+            var random = new Random();
+
+            //Act
+            Parallel.For(0, 1000, i =>
+            {
+                var addMethod = (AddMethod) (addMethods.GetValue(random.Next(addMethods.Length)) ?? AddMethod.Default);
+                var priority = (Priority) (priorities.GetValue(random.Next(priorities.Length)) ?? Priority.Medium);
+                _operatingSystem.Add(addMethod, new Process(i, priority)); 
+            });
+            // for (int i = 0; i < 1000; i++)
+            // {
+            //     var addMethod = (AddMethod) (addMethods.GetValue(random.Next(addMethods.Length)) ?? AddMethod.Default);
+            //     var priority = (Priority) (priorities.GetValue(random.Next(priorities.Length)) ?? Priority.Medium);
+            //     _operatingSystem.Add(addMethod, new Process(i, priority));
+            // }
+            var list = _operatingSystem.List(SortBy.Id);
+            //Assert
+            Assert.Multiple(() =>
+            {
+                Assert.IsNotEmpty(list);
+                Assert.IsTrue(list.Count == 100);
             });
         }
 

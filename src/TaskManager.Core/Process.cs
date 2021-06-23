@@ -9,10 +9,10 @@ namespace TaskManager.Core
         {
             Id = id;
             Priority = priority;
-            Created = DateTimeOffset.UtcNow;
+            Ticks = DateTimeOffset.UtcNow.Ticks;
         }
 
-        public DateTimeOffset Created { get; }
+        public long Ticks { get; }
 
         public long Id { get; }
 

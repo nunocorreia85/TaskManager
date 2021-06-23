@@ -1,0 +1,18 @@
+﻿POST https://localhost:5001/Processes/?AddMethod=Default
+Content-Type: application/json
+
+{"id": 8, "priority":0}
+###
+POST https://localhost:5001/Processes?AddMethod=Fifo
+Content-Type: application/json
+
+{"id": 5, "priority":1}
+
+###
+POST https://localhost:5001/Processes?AddMethod=Priority
+Content-Type: application/json
+
+{"Id": 9, "Priority":3}
+
+###
+GET https://localhost:5001/Processes/?sortBy=CreationTime
