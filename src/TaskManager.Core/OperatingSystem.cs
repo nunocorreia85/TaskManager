@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using TaskManager.Core.Enums;
 using TaskManager.Core.Interfaces;
@@ -29,7 +30,7 @@ namespace TaskManager.Core
         public bool Add(AddMethod method, Process process)
         {
             _logger.LogInformation("Add new process {@process}", process);
-            lock (syncLock)
+            if (Monitor.TryEnter(syncLock, 300))
             {
                 return method switch
                 {
@@ -38,6 +39,8 @@ namespace TaskManager.Core
                     _ => AddProcessDefaultMethod(process)
                 };
             }
+
+            return false;
         }
 
         public void Kill(long processId)
